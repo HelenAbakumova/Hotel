@@ -2,6 +2,7 @@
 ###################
 *.com
 *.dll
+*.class
 *.exe
 *.o
 *.so
@@ -19,17 +20,6 @@
 *.tar
 *.zip
 
-# Logs and databases #
-######################
-*.log
-*.sqlite
 
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.idea
+*.iml
