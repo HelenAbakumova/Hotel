@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'com.bmuschko.tomcat' version "2.5"
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+
+dependencies {
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.21'
+    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
+    compile group: 'javax.servlet', name: 'jstl', version: '1.2'
+//    compile group: 'commons-digester', name: 'commons-digester', version: '2.1'
+
+    //logging
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
+
+    def tomcatVersion = '9.0.8'
+    tomcat  "org.apache.tomcat:tomcat-dbcp:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+tomcat {
+    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
+    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+}
+tomcatRun {
+    httpPort = 8090
+
+//    webAppSourceDirectory = file('src/main')
+    webAppSourceDirectory = file('src/main/webapp')
+
+}
+

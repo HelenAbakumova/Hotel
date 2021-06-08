@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1"
+         xmlns=""
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation=""
+         metadata-complete="false">
+
+    <resource-ref>
+        <description>
+            Resource reference to a factory for java.sql.Connection
+            instances that may be used for talking to a particular
+            database that is configured in the configuration for the web application.
+        </description>
+        <res-ref-name>
+            jdbc/hotel
+        </res-ref-name>
+        <res-type>
+            javax.sql.DataSource
+        </res-type>
+        <res-auth>
+            Container
+        </res-auth>
+    </resource-ref>
+
+    <servlet>
+        <servlet-name>TourController</servlet-name>
+        <servlet-class>controller.RoomControllerImpl</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>TourController</servlet-name>
+        <url-pattern>/tour</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>UserController</servlet-name>
+        <servlet-class>controller.UserControllerImpl</servlet-class>
+    </servlet>
+
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>UserController</servlet-name>-->
+<!--        <url-pattern>/login</url-pattern>-->
+<!--    </servlet-mapping>-->
+</web-app>
