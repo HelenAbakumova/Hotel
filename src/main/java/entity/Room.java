@@ -3,19 +3,19 @@ package entity;
 public class Room {
     private int id;
     private String capacity;
-    private double price;
-    private String category;
-    private String status;
+    private int price;
+    private RoomCategory category;
+    private RoomStatus status;
     private String imgName;
 
     public Room() {
     }
 
-    public Room(int id, String capacity, double price, String category, String status, String imgName) {
+    public Room(int id, String capacity, int price, RoomCategory roomCategory, RoomStatus status, String imgName) {
         this.id = id;
         this.capacity = capacity;
         this.price = price;
-        this.category = category;
+        this.category = roomCategory;
         this.status = status;
         this.imgName = imgName;
     }
@@ -36,27 +36,27 @@ public class Room {
         this.capacity = capacity;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
-    public String getCategory() {
+    public RoomCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(RoomCategory category) {
         this.category = category;
     }
 
-    public String getStatus() {
+    public RoomStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(RoomStatus status) {
         this.status = status;
     }
 
@@ -74,7 +74,7 @@ public class Room {
                 "id=" + id +
                 ", capacity='" + capacity + '\'' +
                 ", price=" + price +
-                ", type=" + category +
+                ", roomCategory=" + category +
                 ", status=" + status +
                 ", imgName='" + imgName + '\'' +
                 '}';

@@ -1,24 +1,26 @@
 package entity;
 
 public class User {
+    private int id;
     private String name;
     private String login;
     private String password;
     private String email;
-    private String status;
     private String role;
 
-    public User(String name, String login, String password, String email, String status, String role) {
+    public User(String name, String login, String password, String email, String role) {
+        this.id = id;
         this.name = name;
         this.login = login;
         this.password = password;
         this.email = email;
-        this.status = status;
+
         this.role = role;
     }
 
     public User() {
     }
+
 
     public String getName() {
         return name;
@@ -52,14 +54,6 @@ public class User {
         this.email = email;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getRole() {
         return role;
     }
@@ -68,14 +62,22 @@ public class User {
         this.role = role;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return "User{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
-                ", status='" + status + '\'' +
                 ", role='" + role + '\'' +
                 '}';
     }

@@ -1,5 +1,6 @@
 package entity;
 
+import java.sql.Date;
 import java.util.List;
 
 public class RoomParameter {
@@ -7,21 +8,12 @@ public class RoomParameter {
     private String capacity;
     private String priceFrom;
     private String priceTo;
-    private List<String> type;
-    private List <String> status;
+    private List<RoomCategory> roomCategory;
+    private List<RoomStatus> status;
     private String imgName;
-
-    public RoomParameter() {
-    }
-
-    public RoomParameter(String capacity, String priceFrom, String priceTo, List<String> type, List<String> status, String imgName) {
-        this.capacity = capacity;
-        this.priceFrom = priceFrom;
-        this.priceTo = priceTo;
-        this.type = type;
-        this.status = status;
-        this.imgName = imgName;
-    }
+    private String sort;
+    private Date arrival;
+    private Date departure;
 
     public String getCapacity() {
         return capacity;
@@ -47,19 +39,19 @@ public class RoomParameter {
         this.priceTo = priceTo;
     }
 
-    public List<String> getType() {
-        return type;
+    public List<RoomCategory> getRoomCategory() {
+        return roomCategory;
     }
 
-    public void setType(List<String> type) {
-        this.type = type;
+    public void setRoomCategory(List<RoomCategory> roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
-    public List<String> getStatus() {
+    public List<RoomStatus> getStatus() {
         return status;
     }
 
-    public void setStatus(List<String> status) {
+    public void setStatus(List<RoomStatus> status) {
         this.status = status;
     }
 
@@ -71,13 +63,37 @@ public class RoomParameter {
         this.imgName = imgName;
     }
 
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
+
+    public Date getArrival() {
+        return arrival;
+    }
+
+    public void setArrival(Date arrival) {
+        this.arrival = arrival;
+    }
+
+    public Date getDeparture() {
+        return departure;
+    }
+
+    public void setDeparture(Date departure) {
+        this.departure = departure;
+    }
+
     @Override
     public String toString() {
         return "RoomParameter{" +
                 "capacity='" + capacity + '\'' +
                 ", priceFrom='" + priceFrom + '\'' +
                 ", priceTo='" + priceTo + '\'' +
-                ", type=" + type +
+                ", type=" + roomCategory +
                 ", status=" + status +
                 ", imgName='" + imgName + '\'' +
                 '}';

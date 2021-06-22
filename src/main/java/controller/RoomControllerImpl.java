@@ -1,12 +1,10 @@
 package controller;
 
-import controller.api.TourController;
-import entity.RoomParameter;
-import entity.RoomStatus;
+import controller.api.RoomController;
 import entity.Room;
+import entity.RoomParameter;
 import service.api.RoomService;
 
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,17 +15,13 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet("/room")
-public class RoomControllerImpl extends HttpServlet implements TourController {
-    ServletContext context;
-    RoomService roomService;
-    FormParser formParser = new FormParser();
-
-    public RoomControllerImpl() throws NamingException {
-    }
+public class RoomControllerImpl extends HttpServlet implements RoomController {
+    private RoomService roomService;
+    private FormParser formParser = new FormParser();
 
     @Override
     public void init() throws ServletException {
-        context = getServletContext();
+        ServletContext context = getServletContext();
         roomService = (RoomService) context.getAttribute("roomService");
         super.init();
     }
@@ -36,20 +30,13 @@ public class RoomControllerImpl extends HttpServlet implements TourController {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RoomParameter roomParameter = formParser.filterPriceSeparate(request);
         System.out.println("request roomParameter " + roomParameter);
-        List<Room> rooms = roomService.selectionOfRoom(roomParameter);
 
-        System.out.println("ROOMS ====>" + rooms);
+
+        List<Room> rooms = roomService.filterRooms(roomService.selectionOfRoom(roomParameter),roomParameter);
+
         request.setAttribute("roomList", rooms);
+
         request.getRequestDispatcher("/room.jsp").forward(request, response);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        RoomParameter roomParameter = formParser.filterPriceSeparate(request);
-//        List<Room> rooms = roomService.selectionOfRoom(roomParameter);
-//
-//        System.out.println("ROOMS ====>  " + rooms);
-//        request.setAttribute("roomList", rooms);
-       request.getRequestDispatcher("/room.jsp").forward(request, response);
-    }
 }

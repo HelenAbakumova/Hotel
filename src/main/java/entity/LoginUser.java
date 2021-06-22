@@ -1,7 +1,5 @@
 package entity;
 
-import javax.servlet.http.HttpServletRequest;
-
 public class LoginUser {
     private String email;
     private String password;

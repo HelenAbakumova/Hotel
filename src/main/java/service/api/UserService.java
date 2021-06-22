@@ -4,12 +4,14 @@ import entity.LoginUser;
 import entity.RegistrationUser;
 import entity.User;
 
-import java.util.List;
-
 public interface UserService {
-    String login(LoginUser loginUser);
+    boolean login(String email, String password);
 
-    String registration(RegistrationUser registrationUser);
+    boolean registration(User user);
 
-    String getRole(LoginUser loginUser);
+    User getByEmail(String email);
+
+    boolean exists(String email);
+
+    User getUser(String email);
 }

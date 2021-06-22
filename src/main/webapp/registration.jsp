@@ -31,7 +31,7 @@ function validate()
      alert("Password must be at least 6 characters long.");
      return false;
      }
-     else if (password!=conpassword)
+     else if (password!=rePassword)
      {
      alert("Confirm Password should match with the Password");
      return false;
@@ -42,7 +42,7 @@ function validate()
 </script>
 </head>
 <body>
-<center><h2>Java Registration application using MVC and MySQL </h2></center>
+<center><h2>Registration</h2></center>
     <form name="form" action="" method="post" onsubmit="return validate()">
         <table align="center">
          <tr>
@@ -63,7 +63,7 @@ function validate()
          </tr>
          <tr>
          <td>Confirm Password</td>
-         <td><input type="password" name="conpassword" /></td>
+         <td><input type="password" name="rePassword" /></td>
          </tr>
          <tr>
          <td><%=(request.getAttribute("errMessage") == null) ? ""

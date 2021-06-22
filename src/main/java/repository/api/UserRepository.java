@@ -1,17 +1,22 @@
 package repository.api;
 
 import entity.LoginUser;
-import entity.RegistrationUser;
 import entity.User;
 
+import javax.management.relation.RoleNotFoundException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface UserRepository {
     List<User> getAllUser(Connection connection, LoginUser loginUser) throws SQLException;
-    String getUser (Connection connection, LoginUser loginUser) throws SQLException;
-    String registerUser(Connection connection, RegistrationUser registrationUser);
-    String authenticateUser(Connection connection, LoginUser loginUser);
-    List<User> getUserByID(Connection connection, LoginUser loginUser);
+
+    User getUser(String email, Connection connection) throws SQLException;
+
+    int getRoleIdByName(String roleName, Connection connection) throws SQLException, RoleNotFoundException;
+
+    User getByEmail(Connection connection, String email) throws SQLException;
+
+    boolean registerUser(Connection connection, User user) throws SQLException;
+
 }

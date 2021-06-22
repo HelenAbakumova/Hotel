@@ -1,36 +1,31 @@
 package entity;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class Bill {
     private long id;
     private BillStatus status;
-    private Order order;
-    private double totalPrice;
+    private Bid bid;
     private Date billDate;
+
+
+    public Bill(long id, BillStatus status, Bid bid) {
+        this.id = id;
+        this.status = status;
+        this.bid = bid;
+        this.billDate = new Timestamp(System.currentTimeMillis());
+    }
 
     public Bill() {
 
     }
 
-    public Bill(long id, BillStatus status, Order order, double totalPrice, Date billDate, LocalDate start, LocalDate end, double price) {
-        this.id = id;
+    public Bill(BillStatus status, Bid bid) {
         this.status = status;
-        this.order = order;
-        //this.billDate = LocalDateTime.now();
-        long days = Duration.between(start.atStartOfDay(), end.atStartOfDay()).toDays();
-        this.totalPrice = price * days;
+        this.bid = bid;
+        this.billDate = new Timestamp(System.currentTimeMillis());
     }
-
-//    public Bill(LocalDate start, LocalDate end, double price) {
-//        billDate = LocalDateTime.now();
-//        long days = Duration.between(start.atStartOfDay(), end.atStartOfDay()).toDays();
-//        double totalPrice = price * days;
-//        this.totalPrice = totalPrice;
-//    }
 
     public long getId() {
         return id;
@@ -48,20 +43,12 @@ public class Bill {
         this.status = status;
     }
 
-    public Order getOrder() {
-        return order;
+    public Bid getBid() {
+        return bid;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setBid(Bid bid) {
+        this.bid = bid;
     }
 
     public Date getBillDate() {
@@ -70,5 +57,15 @@ public class Bill {
 
     public void setBillDate(Date billDate) {
         this.billDate = billDate;
+    }
+
+    @Override
+    public String toString() {
+        return "Bill{" +
+                "id=" + id +
+                ", status=" + status +
+                ", bid=" + bid +
+                ", billDate=" + billDate +
+                '}';
     }
 }

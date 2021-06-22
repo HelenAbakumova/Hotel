@@ -24,22 +24,19 @@ function validate()
 </script>
 </head>
 <body>
-    <div style="text-align:center"><h1>Login application in Java using MVC and MySQL </h1> </div>
+    <div style="text-align:center"><h1>Login</h1> </div>
     <br>
-    <form name="form" action="" method="post" onsubmit="return validate()">
+    <form name="form" action="login" method="post" onsubmit="return validate()">
 
         <table align="center">
          <tr>
          <td>Email</td>
-         <td><input type="text" name="email" /></td>
+         <td><input type="email" name="email" /></td>
          </tr>
          <tr>
          <td>Password</td>
          <td><input type="password" name="password" /></td>
          </tr>
-
-         <td><span style="color:red"><%=(request.getAttribute("errMessage") == null) ? ""
-         : request.getAttribute("errMessage")%></span></td>
          </tr>
          <tr>
          <td></td>

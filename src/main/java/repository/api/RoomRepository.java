@@ -1,23 +1,21 @@
 package repository.api;
 
-import entity.RoomParameter;
-import entity.RoomStatus;
 import entity.Room;
-import entity.RoomType;
+import entity.RoomParameter;
+import exception.RepositoryException;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface RoomRepository {
-    void changeRoomStatus(Connection connection, int id, RoomStatus status);
+    void changeRoomStatus(Connection connection, String roomId, String status,String  arrival, String  departure);
 
-    //   Room findRoomById(Connection connection, RoomParameter roomParameter);
-    // List<Room> findAllRoom(Connection connection, RoomParameter roomParameter);
-    List<Room> selectionOfRoom(Connection connection, RoomParameter roomParameter) throws SQLException;
+    List<Room> selectionOfRoom(Connection connection, RoomParameter roomParameter) throws SQLException, RepositoryException;
 
     List<Room> getAllRooms(Connection connection);
 
+    Room getRoom(Connection connection, int roomId) throws SQLException;
 
+    List<Room> filterRooms(Connection connection, List<Room> rooms, RoomParameter roomParameter) throws SQLException;
 }

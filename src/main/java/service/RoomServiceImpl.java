@@ -1,12 +1,14 @@
 package service;
 
 import db.JDBCManager;
-import entity.RoomParameter;
 import entity.Room;
+import entity.RoomParameter;
 import repository.api.RoomRepository;
 import service.api.RoomService;
+import service.util.RoomUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RoomServiceImpl implements RoomService {
     RoomRepository roomRepository;
@@ -17,23 +19,38 @@ public class RoomServiceImpl implements RoomService {
         this.jdbcManager = jdbcManager;
     }
 
-//    @Override
-//    public List<Room> getRoom(RoomParameter roomParameter) {
-//        return jdbcManager.doInTransaction(connection -> {
-//            try {
-//                return roomRepository.findAllRoom(connection, roomParameter);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                return null;
-//            }
-//        });
-//    }
+    @Override
+    public void changeRoomStatus(String id, String status, String arrival, String departure) {
+        jdbcManager.doInTransaction(connection -> {
+            try {
+                roomRepository.changeRoomStatus(connection, id, status, arrival, departure);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+    }
 
     @Override
-    public List<Room> selectionOfRoom(RoomParameter roomParameter){
+    public Room getRoom(int roomId) {
         return jdbcManager.doInTransaction(connection -> {
             try {
-                return roomRepository.selectionOfRoom(connection, roomParameter);
+                return roomRepository.getRoom(connection, roomId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public List<Room> selectionOfRoom(RoomParameter roomParameter) {
+        return jdbcManager.doInTransaction(connection -> {
+            try {
+                return roomRepository.selectionOfRoom(connection, roomParameter)
+                        .stream()
+                        .sorted(RoomUtils.COMPARATORS.get(roomParameter.getSort()))
+                        .collect(Collectors.toList());
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -51,6 +68,19 @@ public class RoomServiceImpl implements RoomService {
             }
         });
     }
+
+    @Override
+    public List<Room> filterRooms(List<Room> rooms, RoomParameter roomParameter) {
+        return jdbcManager.doInTransaction(connection -> {
+            try {
+                return roomRepository.filterRooms(connection, rooms, roomParameter);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+    }
+
 
 }
 

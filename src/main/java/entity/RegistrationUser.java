@@ -6,16 +6,14 @@ public class RegistrationUser {
     private String email;
     private String password;
     private String rePassword;
-    private String status;
     private String roleName;
 
-    public RegistrationUser(String name, String login, String email, String password, String rePassword, String status, String roleName) {
+    public RegistrationUser(String name, String login, String email, String password, String rePassword, String roleName) {
         this.name = name;
         this.login = login;
         this.email = email;
         this.password = password;
         this.rePassword = rePassword;
-        this.status = status;
         this.roleName = roleName;
     }
 
@@ -61,14 +59,6 @@ public class RegistrationUser {
 
     public void setRePassword(String rePassword) {
         this.rePassword = rePassword;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getRoleName() {

@@ -22,20 +22,15 @@
         </res-auth>
     </resource-ref>
 
-    <servlet>
-        <servlet-name>TourController</servlet-name>
-        <servlet-class>controller.RoomControllerImpl</servlet-class>
-    </servlet>
+    <context-param>
+        <param-name>log4j-config-location</param-name>
+        <param-value>WEB-INF/log4j.properties</param-value>
+    </context-param>
 
-    <servlet-mapping>
-        <servlet-name>TourController</servlet-name>
-        <url-pattern>/tour</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>UserController</servlet-name>
-        <servlet-class>controller.UserControllerImpl</servlet-class>
-    </servlet>
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/errorHandler</location>
+    </error-page>
 
 <!--    <servlet-mapping>-->
 <!--        <servlet-name>UserController</servlet-name>-->

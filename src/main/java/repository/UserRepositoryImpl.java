@@ -1,16 +1,20 @@
 package repository;
 
 import entity.LoginUser;
-import entity.RegistrationUser;
 import entity.User;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import repository.api.UserRepository;
 
+import javax.management.relation.RoleNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class UserRepositoryImpl implements UserRepository {
+    private static final Logger LOGGER = LogManager.getLogger(UserRepositoryImpl.class);
+    private static final String SQL_LOGIN_USER = "SELECT * FROM hotel.users INNER JOIN hotel.roles on hotel.users.role_id = hotel.roles.id where hotel.users.email = ?;";
+
 
     @Override
     public List<User> getAllUser(Connection connection, LoginUser loginUser) {
@@ -27,48 +31,25 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return getUser;
     }
+
     @Override
-    public List<User> getUserByID(Connection connection, LoginUser loginUser) {
-        Statement statement;
-        List<User> getUser = new ArrayList<>();
-        try {
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM hotel.users WHERE email =?");
-            while (resultSet.next()) {
-                getUser.add(extractUser(resultSet));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public User getUser(String email, Connection connection) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(SQL_LOGIN_USER);
+        statement.setString(1, email);
+        ResultSet rs = statement.executeQuery();
+        if (rs.next()) {
+            User user = extractUser(rs);
+            rs.close();
+            return user;
         }
-        return getUser;
+        return null;
     }
 
-    public String getUser(Connection connection, LoginUser loginUser) throws SQLException {
-        String email = loginUser.getEmail();
-        String password = loginUser.getPassword();
-        Statement statement = null;
-        ResultSet resultSet = null;
-        String emailDB = "";
-        String passwordDB = "";
-        try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery("select email,password from hotel.users");
-            while (resultSet.next()) {
-                emailDB = resultSet.getString("email");
-                passwordDB = resultSet.getString("password");
-                if (email.equals(emailDB) && password.equals(passwordDB)) {
-                    return "SUCCESS";
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "Invalid user credentials";
-    }
 
     private User extractUser(ResultSet resultSet) throws SQLException {
         User user = new User();
         if (resultSet != null) {
+            user.setId(resultSet.getInt("id"));
             user.setEmail(resultSet.getString("email"));
             user.setName(resultSet.getString("name"));
             user.setLogin(resultSet.getString("login"));
@@ -77,56 +58,54 @@ public class UserRepositoryImpl implements UserRepository {
         return user;
     }
 
-    public String registerUser(Connection connection, RegistrationUser registrationUser) {
-
-        String name = registrationUser.getName();
-        String email = registrationUser.getEmail();
-        String login = registrationUser.getLogin();
-        String password = registrationUser.getPassword();
-
-        PreparedStatement preparedStatement = null;
-        try {
-            String query = "insert into users(name, login, email, password) values (?,?,?,?)"; //Insert user details into the table 'USERS'
-            preparedStatement = connection.prepareStatement(query); //Making use of prepared statements here to insert bunch of data
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, email);
-            preparedStatement.setString(3, login);
-            preparedStatement.setString(4, password);
-
-            int i = preparedStatement.executeUpdate();
-
-            if (i != 0)  //Just to ensure data has been inserted into the database
-                return "SUCCESS";
-        } catch (SQLException e) {
-            e.printStackTrace();
+    @Override
+    public int getRoleIdByName(String roleName, Connection connection) throws SQLException, RoleNotFoundException {
+        PreparedStatement statement = connection.prepareStatement("SELECT id FROM hotel.roles where role_name = ?;");
+        statement.setString(1, roleName);
+        ResultSet rs = statement.executeQuery();
+        if (rs.next()) {
+            int id = rs.getInt("id");
+            rs.close();
+            return id;
         }
-        return "Oops.. Something went wrong there..!";  // On failure, send a message from here.
+        throw new RoleNotFoundException("Role not found" + roleName);
     }
 
-    public String authenticateUser(Connection connection, LoginUser loginUser) {
-        String email = loginUser.getEmail();
-        String password = loginUser.getPassword();
-        Statement statement = null;
-        ResultSet resultSet = null;
-        String emailDB = "";
-        String passwordDB = "";
-        String roleDB = "";
+    @Override
+    public boolean registerUser(Connection connection, User user) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("insert into users(name, login, email, password,role_id) values (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+        preparedStatement.setString(1, user.getName());
+        preparedStatement.setString(2, user.getLogin());
+        preparedStatement.setString(3, user.getEmail());
+        preparedStatement.setString(4, user.getPassword());
         try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery("SELECT email, password, role_name FROM hotel.users, hotel.roles;");
-            while (resultSet.next()) {
-                emailDB = resultSet.getString("email");
-                passwordDB = resultSet.getString("password");
-                roleDB = resultSet.getString("role_name");
-                if (email.equals(emailDB) && password.equals(passwordDB) && roleDB.equals("Admin")) {
-                    return "Admin_Role";
-                } else if (email.equals(emailDB) && password.equals(passwordDB) && roleDB.equals("User")) {
-                    return "User_Role";
-                }
-            }
-        } catch (SQLException e) {
+            preparedStatement.setInt(5, getRoleIdByName(user.getRole(), connection));
+        } catch (RoleNotFoundException e) {
             e.printStackTrace();
         }
-        return "Invalid user credentials";
+        if (preparedStatement.executeUpdate() > 0) {
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public User getByEmail(Connection connection, String email) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(SQL_LOGIN_USER);
+        preparedStatement.setString(1, email);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if (resultSet.next()) {
+            try {
+                User user = extractUser(resultSet);
+                resultSet.close();
+                return user;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }

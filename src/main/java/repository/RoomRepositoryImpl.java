@@ -1,8 +1,7 @@
 package repository;
 
-import entity.RoomParameter;
-import entity.RoomStatus;
-import entity.Room;
+import entity.*;
+import exception.RepositoryException;
 import repository.api.RoomRepository;
 
 import java.sql.*;
@@ -13,45 +12,21 @@ import java.util.Objects;
 public class RoomRepositoryImpl implements RoomRepository {
 
     public static final String PARAM_ID = "room_id";
-    public static final String PARAM_STATUS_ROOM = "room_status";
+
     public static final String PARAM_NUMBER_BEDS = "capacity";
     public static final String PARAM_COST_PER_DAY = "price";
-    public static final String PARAM_CATEGORY = "room_categories";
+    public static final String PARAM_CATEGORY = "room_category";
 
-    public static final String FIND_ROOM_LIST = "SELECT * FROM `room` INNER JOIN roominformation ON room.id_roominfo = roominformation.id_roominfo";
+    public static final String FIND_ROOM_BY_ID = "SELECT * FROM hotel.room WHERE room_id=?";
 
-    public static final String FIND_ROOM_BY_ID = "SELECT * FROM hotel.room INNER JOIN room_categories ON room_categories = room_categories.room_categories_id WHERE room_id=?";
-
-    public static final String UPDATE_ROOM_STATUS = "UPDATE room SET status = ? WHERE room_id = ? ";
-    public static final String SELECT_FROM_HOTEL_ROOM = "SELECT * FROM hotel.room";
-
-//    @Override
-//    public List<Room> findAllRoom(Connection connection, RoomParameter roomParameter){
-//        List<Room> roomList = new ArrayList<Room>();
-//        PreparedStatement preparedStatement = null;
-//        ResultSet resultSet = null;
-//        try {
-//            preparedStatement = connection.prepareStatement(FIND_ROOM_LIST);
-//            resultSet = preparedStatement.executeQuery();
-//            while (resultSet.next()) {
-//                room.setId(Integer.parseInt(resultSet.getString(PARAM_ID)));
-//                room.setStatus(RoomStatus.valueOf(resultSet.getString(PARAM_STATUS_ROOM)));
-//                room.setType(RoomType.valueOf(resultSet.getString(PARAM_CATEGORY)));
-//                room.setPrice(Integer.parseInt(resultSet.getString(PARAM_COST_PER_DAY)));
-//                roomList.add(room);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return roomList;
-//    }
+    public static final String UPDATE_ROOM_STATUS = "UPDATE hotel.concatenated_table SET room_status = ? WHERE room_id = ? ";
+    public static final String SELECT_FROM_HOTEL_ROOM = "SELECT * FROM room ";
+    public static final String SELECT_FROM_CONCATENATED_TABLE = "select * from concatenated_table";
 
     @Override
     public List<Room> getAllRooms(Connection connection) {
         Statement statement;
         List<Room> getAll = new ArrayList<>();
-        if (Objects.nonNull(getAllRooms(connection))) {
-        }
         try {
             statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SELECT_FROM_HOTEL_ROOM);
@@ -63,34 +38,33 @@ public class RoomRepositoryImpl implements RoomRepository {
         }
         return getAll;
     }
-//        @Override
-//        public Room findRoomById (Connection connection, Room room){
-//            PreparedStatement preparedStatement = null;
-//            ResultSet resultSet = null;
-//            try {
-//                preparedStatement = connection.prepareStatement(FIND_ROOM_BY_ID);
-//                preparedStatement.setInt(1, room.getId());
-//                resultSet = preparedStatement.executeQuery();
-//                if (resultSet.next()) {
-//                    room.setId(Integer.parseInt(resultSet.getString(PARAM_ID)));
-//                    room.setStatus(RoomStatus.valueOf(resultSet.getString(PARAM_STATUS_ROOM)));
-//                    room.setCapacity(Integer.parseInt(resultSet.getString(PARAM_NUMBER_BEDS)));
-//                    room.setType(RoomType.valueOf(resultSet.getString(PARAM_CATEGORY)));
-//                    room.setPrice(Integer.parseInt(resultSet.getString(PARAM_COST_PER_DAY)));
-//                }
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//            return room;
-//        }
 
     @Override
-    public void changeRoomStatus(Connection connection, int id, RoomStatus status) {
-        PreparedStatement preparedStatement = null;
+    public Room getRoom(Connection connection, int roomId) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(FIND_ROOM_BY_ID);
+        preparedStatement.setInt(1, roomId);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        Room room = new Room();
+
+        if (resultSet.next()) {
+            try {
+                room = extractRoom(resultSet);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return room;
+    }
+
+    @Override
+    public void changeRoomStatus(Connection connection, String roomId, String status, String  arrival, String  departure) {
+        PreparedStatement preparedStatement;
         try {
             preparedStatement = connection.prepareStatement(UPDATE_ROOM_STATUS);
-            preparedStatement.setString(1, status.toString());
-            preparedStatement.setInt(2, id);
+            preparedStatement.setString(1, status);
+            preparedStatement.setString(2, roomId);
+            preparedStatement.setString(3, arrival);
+            preparedStatement.setString(4, departure);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -98,16 +72,74 @@ public class RoomRepositoryImpl implements RoomRepository {
     }
 
 
+    @Override
+    public List<Room> selectionOfRoom(Connection connection, RoomParameter roomParameter) throws SQLException, RepositoryException {
+        Statement statement;
+        List<Room> roomArrayList = new ArrayList<>();
+        statement = connection.createStatement();
+        ResultSet resultSet;
+        String query = buildQuery(roomParameter);
+        resultSet = statement.executeQuery(query);
+        while (resultSet.next()) {
+            try {
+                roomArrayList.add(extractRoom(resultSet));
+            } catch (SQLException e) {
+               throw new RepositoryException();
+            }
+        }
+
+        return roomArrayList;
+    }
+
+    @Override
+    public List<Room> filterRooms(Connection connection, List<Room> rooms, RoomParameter roomParameter) throws SQLException {
+        Statement statement;
+
+        List<RoomStatusFilter> list = new ArrayList<>();
+        statement = connection.createStatement();
+        ResultSet resultSet;
+        resultSet = statement.executeQuery(SELECT_FROM_CONCATENATED_TABLE);
+        while (resultSet.next()) {
+            try {
+                list.add(new RoomStatusFilter(resultSet.getInt("room_id"),
+                        resultSet.getDate("date_from"),
+                        resultSet.getDate("date_to"),
+                        RoomStatus.valueOf(resultSet.getString("room_status"))
+                ));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        List<Integer> roomsToRemove = new ArrayList<>();
+        for (Room room : rooms) {
+            for (RoomStatusFilter filter : list) {
+                if (room.getId() == filter.getId()) {
+                    if (checkOverlap(roomParameter.getArrival(), roomParameter.getDeparture(), filter.getArrival(), filter.getDeparture())) {
+                        roomsToRemove.add(room.getId());
+                    }
+                }
+            }
+        }
+        for (int id : roomsToRemove) {
+            rooms.remove(id);
+        }
+        return rooms;
+    }
+
+    private boolean checkOverlap(Date arrivalFromUser, Date departureFromUser, Date arrivalFromDb, Date departureFromDb) {
+        return arrivalFromUser.before(departureFromDb) && arrivalFromDb.before(departureFromUser);
+    }
+
+
     private String buildQuery(RoomParameter roomParameter) {
         StringBuilder query = new StringBuilder(SELECT_FROM_HOTEL_ROOM);
-        List<String> roomCategories = roomParameter.getType();
-        List<String> roomStatuses = roomParameter.getStatus();
+        List<RoomCategory> roomCategories = roomParameter.getRoomCategory();
 
         if (Objects.nonNull(roomCategories)) {
             compareQuery(query);
-            query.append(" room_categories in ('");
+            query.append(" room_category in ('");
             for (int i = 0; i < roomCategories.size(); i++) {
-                query.append(roomCategories.get(i)).append("'");
+                query.append(roomCategories.get(i).toString()).append("'");
                 if (roomCategories.size() - 1 != i) {
                     query.append(",'");
                 }
@@ -118,21 +150,11 @@ public class RoomRepositoryImpl implements RoomRepository {
             compareQuery(query);
             query.append(" capacity ='").append(roomParameter.getCapacity()).append("'");
         }
-        if (Objects.nonNull(roomStatuses)) {
-            compareQuery(query);
-            query.append(" room_status in ('");
-            for (int a = 0; a < roomStatuses.size(); a++) {
-                query.append(roomStatuses.get(a)).append("'");
-                if (roomStatuses.size() - 1 != a) {
-                    query.append(",'");
-                }
-            }
-            query.append(")");
-        }
+
         if (Objects.nonNull(roomParameter.getPriceFrom())) {
             compareQuery(query);
-            if (roomParameter.getPriceTo() != null){
-            query.append(" price > ").append(roomParameter.getPriceFrom());
+            if (roomParameter.getPriceTo() != null) {
+                query.append(" price > ").append(roomParameter.getPriceFrom());
             }
         }
         if (Objects.nonNull(roomParameter.getPriceTo())) {
@@ -143,6 +165,17 @@ public class RoomRepositoryImpl implements RoomRepository {
         return query.toString();
     }
 
+    private Room extractRoom(ResultSet rs) throws SQLException {
+        Room room = new Room();
+        if (rs != null) {
+            room.setId(rs.getInt("room_id"));
+            room.setCapacity(rs.getString("capacity"));
+            room.setCategory(RoomCategory.valueOf(rs.getString("room_category")));
+            room.setPrice(Integer.parseInt(rs.getString("price")));
+        }
+        return room;
+    }
+
     private StringBuilder compareQuery(StringBuilder compareQuery) {
         if (compareQuery.toString().equals(SELECT_FROM_HOTEL_ROOM)) {
             compareQuery.append(" where");
@@ -150,38 +183,6 @@ public class RoomRepositoryImpl implements RoomRepository {
             compareQuery.append(" and");
         }
         return compareQuery;
-    }
-
-    @Override
-    public List<Room> selectionOfRoom(Connection connection, RoomParameter roomParameter) throws SQLException {
-        Statement statement;
-        List<Room> roomArrayList = new ArrayList<>();
-        System.out.println("selectionOfTours one");
-        statement = connection.createStatement();
-        ResultSet resultSet;
-        String query = buildQuery(roomParameter);
-        resultSet = statement.executeQuery(query);
-        while (resultSet.next()) {
-            try {
-                roomArrayList.add(extractRoom(resultSet));
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return roomArrayList;
-    }
-
-    private Room extractRoom(ResultSet rs) throws SQLException {
-        Room room = new Room();
-        if (rs != null) {
-            room.setId(rs.getInt("room_id"));
-            room.setCapacity(rs.getString("capacity"));
-            room.setCategory(rs.getString("room_categories"));
-            room.setPrice(Double.parseDouble(rs.getString("price")));
-            room.setStatus(rs.getString("room_status"));
-
-        }
-        return room;
     }
 
 }
